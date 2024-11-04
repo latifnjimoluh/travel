@@ -30,9 +30,32 @@ const diff = execSync('git diff HEAD~1 HEAD').toString();
 // Afficher les différences pour le débogage
 console.log('Différences du dernier commit:', diff);
 
+// Fonction d'analyse de code
+function analyzeCodeForCriteria(code) {
+    const issues = [];
+
+    // Vérification du camel case
+    const variableFunctionNames = code.match(/\b(?:var|let|const|function)\s+([a-z][a-zA-Z0-9]*)/g);
+    if (variableFunctionNames) {
+        variableFunctionNames.forEach((name) => {
+            const match = name.match(/\s+([a-z][a-zA-Z0-9]*)/);
+            if (match && match[1] !== match[1].replace(/^[a-z]+|[A-Z]/g, (letter, index) => (index === 0 ? letter.toLowerCase() : letter.toUpperCase()))) {
+                issues.push(`Nom de variable ou fonction "${match[1]}" ne respecte pas le style camel case.`);
+            }
+        });
+    }
+
+    // Vérification de la lisibilité et de la modularité
+    if (code.length > 200) {
+        issues.push('Le code est trop long et pourrait bénéficier d\'une meilleure modularité.');
+    }
+
+    // Retourner les problèmes trouvés
+    return issues.length > 0 ? issues.join('<br>') : 'Le code respecte les critères de style.';
+}
+
 // Fonction pour analyser le code via Gemini
-// Fonction pour analyser le code via Gemini
-async function analyzeCode(code) {
+async function analyzeCodeWithGemini(code) {
     try {
         const requestPayload = {
             contents: [
@@ -93,11 +116,23 @@ const transporter = nodemailer.createTransport({
 
 // Fonction principale pour exécuter le script
 async function main() {
-    // Analyse du code et obtention des suggestions
-    const suggestions = await analyzeCode(diff);
+    // Analyse du code pour vérifier les critères
+    const localSuggestions = analyzeCodeForCriteria(diff);
+    console.log('Suggestions d\'amélioration locales:', localSuggestions);
 
-    // Afficher les suggestions pour le débogage
-    console.log('Suggestions d\'amélioration reçues:', suggestions);
+    // Analyse du code et obtention des suggestions via Gemini
+    const geminiSuggestions = await analyzeCodeWithGemini(diff);
+
+    // Combiner les suggestions locales et celles de Gemini
+    const combinedSuggestions = `
+        <strong>Suggestions d'amélioration locales :</strong><br>
+        <pre>${localSuggestions}</pre>
+        <strong>Suggestions d'amélioration via Gemini :</strong><br>
+        <pre>${geminiSuggestions}</pre>
+    `;
+
+    // Afficher les suggestions combinées pour le débogage
+    console.log('Suggestions d\'amélioration combinées:', combinedSuggestions);
 
     // Options de l'email
     const mailOptions = {
@@ -136,8 +171,7 @@ async function main() {
                     <h1>🎉 Nouveau Commit Effectué !</h1>
                     <p>Voici les détails du dernier commit :</p>
                     <pre>${commitDetails}</pre>
-                    <p>Suggestions d'amélioration :</p>
-                    <pre>${suggestions}</pre>
+                    <p>${combinedSuggestions}</p>
                     <p>Merci de votre attention.</p>
                 </div>
             </body>
