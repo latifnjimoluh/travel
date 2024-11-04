@@ -7,6 +7,10 @@ import axios from 'axios';
 const commitInfo = execSync('git log -1 --pretty=format:"%H - %an <%ae> - %s"').toString();
 const commitDetails = execSync('git log -1 --pretty=format:"Commit par : %an<br>Email : %ae<br>Message : %s<br>Date : %ad"').toString();
 
+// Afficher les informations du commit pour le débogage
+console.log('Informations du dernier commit:', commitInfo);
+console.log('Détails du commit:', commitDetails);
+
 // Extraire l'adresse e-mail de l'auteur du commit
 const emailMatch = commitInfo.match(/<(.*?)>/);
 let userEmail = emailMatch ? emailMatch[1] : '';
@@ -17,23 +21,59 @@ if (!userEmail.includes('@gmail.com')) {
     userEmail = `${username}@gmail.com`; // Créer l'adresse e-mail
 }
 
+// Afficher l'adresse email pour le débogage
+console.log('Adresse e-mail de l\'auteur du commit:', userEmail);
+
 // Récupérer les modifications du dernier commit
 const diff = execSync('git diff HEAD~1 HEAD').toString();
 
-// Fonction pour analyser le code via l'API de Gemini
+// Afficher les différences pour le débogage
+console.log('Différences du dernier commit:', diff);
+
+// Fonction pour analyser le code via Gemini
+// Fonction pour analyser le code via Gemini
 async function analyzeCode(code) {
     try {
-        const response = await axios.post('https://api.gemini.com/v1/analyze', { // URL hypothétique
-            code: code,
-            model: 'gemini' // Modèle hypothétique
-        }, {
-            headers: {
-                'Authorization': `Bearer ${process.env.GEMINI_API_KEY}`, // Utilisez votre clé API Gemini
-                'Content-Type': 'application/json',
-            },
-        });
+        const requestPayload = {
+            contents: [
+                {
+                    parts: [
+                        {
+                            text: `Please review the following code and suggest improvements:\n\n${code}`
+                        }
+                    ]
+                }
+            ],
+        };
 
-        return response.data.suggestions; // Ajustez en fonction de la réponse de l'API
+        console.log('Détails de la requête à l\'API Gemini:', requestPayload);
+
+        const response = await axios.post(
+            'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=' + process.env.GEMINI_API_KEY,
+            requestPayload,
+            {
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+            }
+        );
+
+        console.log('Réponse de l\'API reçue:', response.data); // Log la réponse
+
+        // Inspecter le contenu du candidat
+        if (response.data.candidates && response.data.candidates.length > 0) {
+            const candidateContent = response.data.candidates[0].content;
+            console.log('Contenu du candidat:', candidateContent); // Log pour voir la structure
+
+            // Si content est un tableau d'objets, parcourez-le pour trouver le texte
+            if (Array.isArray(candidateContent) && candidateContent.length > 0) {
+                return candidateContent.map(part => part.text).join('\n'); // Rejoindre les textes si plusieurs parties
+            } else {
+                return 'Aucune suggestion d\'amélioration disponible.';
+            }
+        } else {
+            return 'Aucune suggestion d\'amélioration disponible.';
+        }
     } catch (error) {
         console.error(`Erreur lors de l'analyse du code : ${error.message}`);
         return 'Aucune suggestion d\'amélioration disponible.';
@@ -55,6 +95,9 @@ const transporter = nodemailer.createTransport({
 async function main() {
     // Analyse du code et obtention des suggestions
     const suggestions = await analyzeCode(diff);
+
+    // Afficher les suggestions pour le débogage
+    console.log('Suggestions d\'amélioration reçues:', suggestions);
 
     // Options de l'email
     const mailOptions = {
