@@ -72,12 +72,14 @@ async function analyzeCodeWithGemini(code) {
 }
 
 // Fonction pour créer un PDF avec les suggestions
+
 async function createPdf(combinedSuggestions) {
     const pdfDoc = await PDFDocument.create();
     const page = pdfDoc.addPage([600, 400]);
     const { width, height } = page.getSize();
-
-    // Définir la police et la couleur
+    const fontSize = 12;
+    
+    // Texte de titre
     page.drawText('Suggestions d\'amélioration', {
         x: 50,
         y: height - 50,
@@ -85,18 +87,47 @@ async function createPdf(combinedSuggestions) {
         color: rgb(0, 0, 0),
     });
 
-    // Ajouter les suggestions
-    page.drawText(combinedSuggestions, {
-        x: 50,
-        y: height - 100,
-        size: 12,
-        color: rgb(0, 0, 0),
-        lineHeight: 14,
+    // Contenu des suggestions d'amélioration (décompose les lignes longues)
+    const textLines = splitTextIntoLines(combinedSuggestions, 80); // 80 caractères par ligne environ
+    let yPosition = height - 100;
+
+    textLines.forEach(line => {
+        if (yPosition < 50) {
+            // Ajouter une nouvelle page si on atteint le bas de la page
+            page = pdfDoc.addPage([600, 400]);
+            yPosition = height - 50;
+        }
+        page.drawText(line, {
+            x: 50,
+            y: yPosition,
+            size: fontSize,
+            color: rgb(0, 0, 0),
+        });
+        yPosition -= fontSize + 4; // Ajuster l'espacement entre les lignes
     });
 
     const pdfBytes = await pdfDoc.save();
     return pdfBytes;
 }
+
+// Fonction utilitaire pour diviser le texte en lignes de longueur définie
+function splitTextIntoLines(text, maxCharsPerLine) {
+    const words = text.split(' ');
+    const lines = [];
+    let currentLine = '';
+
+    words.forEach(word => {
+        if ((currentLine + word).length > maxCharsPerLine) {
+            lines.push(currentLine);
+            currentLine = word;
+        } else {
+            currentLine += `${word} `;
+        }
+    });
+    lines.push(currentLine.trim()); // Ajouter la dernière ligne
+    return lines;
+}
+
 
 // Configuration du transporteur de courrier avec nodemailer
 const transporter = nodemailer.createTransport({
