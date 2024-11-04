@@ -41,7 +41,7 @@ function analyzeCodeForCriteria(code) {
 // Fonction pour analyser le code via Gemini
 async function analyzeCodeWithGemini(code) {
     const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
-    const prompt = `Veuillez examiner le code suivant et suggérer des améliorations. Et reponds uniquement en français:\n\n${code}`;
+    const prompt = `Veuillez examiner le code suivant puis fournis le nom des fichiers modifiés, la modification effectuée et suggérer des améliorations. Et reponds uniquement en français:\n\n${code}`;
 
     const result = await model.generateContent(prompt);
     const response = await result.response;
