@@ -34,7 +34,7 @@ function getFileExtension(filename) {
 // Fonction pour analyser le code via Gemini
 async function analyzeCodeWithGemini(code) {
     const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
-    const prompt = `Veuillez examiner le code suivant puis fournir des améliorations. Founis moi uniquement le code amelioré Répond uniquement en français:\n\n${code}`;
+    const prompt = `Founis moi uniquement le code amelioré les commentaires sont uniquement en français:\n\n${code}`;
 
     const result = await model.generateContent(prompt);
     const response = await result.response;
