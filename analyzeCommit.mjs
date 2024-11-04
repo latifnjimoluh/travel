@@ -2,9 +2,7 @@ import { execSync } from 'child_process';
 import nodemailer from 'nodemailer';
 import 'dotenv/config';
 import { GoogleGenerativeAI } from "@google/generative-ai";
-import PDFDocument from 'pdfkit';
 import fs from 'fs';
-import path from 'path';
 
 // Créer une instance de Gemini
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
@@ -28,30 +26,21 @@ function getModifiedFiles() {
 
 // Fonction pour analyser le code via Gemini
 async function analyzeCodeWithGemini(code) {
-    try {
-        const response = await genAI.generateText({
-            prompt: `Veuillez examiner le code suivant et fournir des suggestions d'amélioration en français:\n\n${code}`,
-            model: "gemini-1.5-flash",
-        });
-        return response ? response.text : 'Aucune suggestion d\'amélioration disponible.';
-    } catch (error) {
-        console.error("Erreur lors de l'analyse Gemini :", error);
-        return "Erreur lors de l'analyse du code.";
-    }
+    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+    const prompt = `Veuillez examiner le code suivant puis fournir le nom des fichiers modifiés, la modification effectuée et suggérer des améliorations. Répond uniquement en français:\n\n${code}`;
+
+    const result = await model.generateContent(prompt);
+    const response = await result.response;
+
+    const text = response.text();
+    return text || 'Aucune suggestion d\'amélioration disponible.';
 }
 
-// Fonction pour créer un PDF avec les suggestions
-function createPDF(commitDetails, suggestions, outputPath) {
-    const doc = new PDFDocument();
-    doc.pipe(fs.createWriteStream(outputPath));
-
-    doc.fontSize(16).text('Détails du Commit', { underline: true });
-    doc.moveDown().fontSize(12).text(commitDetails);
-
-    doc.moveDown().fontSize(16).text('Suggestions d\'Amélioration', { underline: true });
-    doc.moveDown().fontSize(12).text(suggestions);
-
-    doc.end();
+// Fonction pour créer un fichier de suggestion en fonction de l'extension
+function createSuggestionFile(extension, suggestions) {
+    const filePath = `suggestions_gemini.${extension}`;
+    fs.writeFileSync(filePath, suggestions);
+    return filePath;
 }
 
 // Fonction principale pour exécuter le script
@@ -72,11 +61,12 @@ async function main() {
 
     const geminiSuggestions = await analyzeCodeWithGemini(diff);
 
-    // Créer le fichier PDF
-    const pdfPath = 'suggestions_gemini.pdf';
-    createPDF(commitDetails, geminiSuggestions, pdfPath);
+    // Créer les fichiers de suggestions pour chaque type de langage
+    const suggestionFiles = modifiedFiles.map(file => {
+        const extension = file.split('.').pop();
+        return createSuggestionFile(extension, geminiSuggestions);
+    });
 
-    // Extraire l'email de l'utilisateur du commit
     const emailMatch = commitInfo.match(/<(.*?)>/);
     let userEmail = emailMatch ? emailMatch[1] : '';
 
@@ -85,7 +75,6 @@ async function main() {
         userEmail = `${username}@gmail.com`;
     }
 
-    // Configurer le transporteur de l'email
     const transporter = nodemailer.createTransport({
         host: process.env.SMTP_HOST,
         port: process.env.SMTP_PORT,
@@ -142,12 +131,10 @@ async function main() {
             </body>
             </html>
         `,
-        attachments: [
-            {
-                filename: 'suggestions_gemini.pdf',
-                path: pdfPath,
-            },
-        ],
+        attachments: suggestionFiles.map(filePath => ({
+            filename: filePath,
+            path: filePath,
+        })),
     };
 
     transporter.sendMail(mailOptions, (error, info) => {
@@ -155,7 +142,7 @@ async function main() {
             console.error(`Erreur lors de l'envoi de l'email : ${error.message}`);
         } else {
             console.log(`Notification de commit envoyée à ${userEmail} !`);
-            fs.unlinkSync(pdfPath); // Supprimer le PDF après l'envoi
+            suggestionFiles.forEach(file => fs.unlinkSync(file)); // Supprimer les fichiers après l'envoi
         }
     });
 }
