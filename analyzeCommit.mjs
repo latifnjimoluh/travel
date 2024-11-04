@@ -20,6 +20,11 @@ function getDiff() {
     return execSync('git diff HEAD~1 HEAD').toString();
 }
 
+// Fonction pour récupérer les fichiers modifiés du dernier commit
+function getModifiedFiles() {
+    return execSync('git diff --name-only HEAD~1 HEAD').toString().trim().split('\n');
+}
+
 // Fonction pour analyser le code via Gemini
 async function analyzeCodeWithGemini(code) {
     const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
@@ -50,10 +55,12 @@ function createPDF(commitDetails, suggestions, outputPath) {
 async function main() {
     const { commitInfo, commitDetails } = getCommitDetails();
     const diff = getDiff();
+    const modifiedFiles = getModifiedFiles();
 
     console.log('Informations du dernier commit:', commitInfo);
     console.log('Détails du commit:', commitDetails);
     console.log('Différences du dernier commit:', diff);
+    console.log('Fichiers modifiés :', modifiedFiles.join(', '));
 
     if (!diff.trim()) {
         console.log('Aucune modification de code à analyser.');
@@ -120,6 +127,10 @@ async function main() {
                     <h1>Nouveau Commit Effectué !</h1>
                     <p>Voici les détails du dernier commit :</p>
                     <pre>${commitDetails}</pre>
+                    <p><strong>Fichiers modifiés :</strong></p>
+                    <ul>
+                        ${modifiedFiles.map(file => `<li>${file}</li>`).join('')}
+                    </ul>
                     <p>Veuillez trouver en pièce jointe les suggestions d'amélioration.</p>
                     <p>Merci de votre attention.</p>
                 </div>
