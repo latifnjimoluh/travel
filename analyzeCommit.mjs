@@ -1,26 +1,44 @@
 import { execSync } from 'child_process';
 import nodemailer from 'nodemailer';
+import { PDFDocument, rgb } from 'pdf-lib'; // Importer PDFDocument
 import 'dotenv/config';
 import { GoogleGenerativeAI } from "@google/generative-ai";
 
-// Créer une instance de Gemini
+// Initialiser le client Gemini avec la clé API
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 
-// Fonction pour récupérer les détails du dernier commit
-function getCommitDetails() {
-    const commitInfo = execSync('git log -1 --pretty=format:"%H - %an <%ae> - %s"').toString();
-    const commitDetails = execSync('git log -1 --pretty=format:"Commit par : %an<br>Email : %ae<br>Message : %s<br>Date : %ad"').toString();
-    return { commitInfo, commitDetails };
+// Récupérer les informations du dernier commit
+const commitInfo = execSync('git log -1 --pretty=format:"%H - %an <%ae> - %s"').toString();
+const commitDetails = execSync('git log -1 --pretty=format:"Commit par : %an<br>Email : %ae<br>Message : %s<br>Date : %ad"').toString();
+
+// Afficher les informations du commit pour le débogage
+console.log('Informations du dernier commit:', commitInfo);
+console.log('Détails du commit:', commitDetails);
+
+// Extraire l'adresse e-mail de l'auteur du commit
+const emailMatch = commitInfo.match(/<(.*?)>/);
+let userEmail = emailMatch ? emailMatch[1] : '';
+
+// Vérifier si l'adresse e-mail est déjà au bon format
+if (!userEmail.includes('@gmail.com')) {
+    const username = userEmail.substring(userEmail.indexOf('+') + 1, userEmail.indexOf('@'));
+    userEmail = `${username}@gmail.com`; // Créer l'adresse e-mail
 }
 
-// Fonction pour récupérer les modifications du dernier commit
-function getDiff() {
-    return execSync('git diff HEAD~1 HEAD').toString();
-}
+// Afficher l'adresse email pour le débogage
+console.log('Adresse e-mail de l\'auteur du commit:', userEmail);
 
-// Fonction d'analyse de code
+// Récupérer les modifications du dernier commit
+const diff = execSync('git diff HEAD~1 HEAD').toString();
+
+// Afficher les différences pour le débogage
+console.log('Différences du dernier commit:', diff);
+
+// Fonction d'analyse de code pour vérifier les critères
 function analyzeCodeForCriteria(code) {
     const issues = [];
+
+    // Vérification du camel case
     const variableFunctionNames = code.match(/\b(?:var|let|const|function)\s+([a-z][a-zA-Z0-9]*)/g);
     if (variableFunctionNames) {
         variableFunctionNames.forEach((name) => {
@@ -31,45 +49,76 @@ function analyzeCodeForCriteria(code) {
         });
     }
 
+    // Vérification de la lisibilité et de la modularité
     if (code.length > 200) {
         issues.push('Le code est trop long et pourrait bénéficier d\'une meilleure modularité.');
     }
 
+    // Retourner les problèmes trouvés
     return issues.length > 0 ? issues.join('<br>') : 'Le code respecte les critères de style.';
 }
 
 // Fonction pour analyser le code via Gemini
 async function analyzeCodeWithGemini(code) {
-    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
-    const prompt = `Please review the following code and suggest improvements:\n\n${code}`;
-
-    const result = await model.generateContent(prompt);
-    const response = await result.response;
-
-    const text = response.text();
-    return text || 'Aucune suggestion d\'amélioration disponible.';
+    try {
+        const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" }); // Initialiser le modèle
+        const result = await model.generateContent(`Please review the following code and suggest improvements:\n\n${code}`);
+        const text = await result.response.text(); // Extraire le texte de la réponse
+        return text || 'Aucune suggestion d\'amélioration disponible.'; // Vérifier si le texte est vide
+    } catch (error) {
+        console.error(`Erreur lors de l'analyse du code : ${error.message}`);
+        return 'Aucune suggestion d\'amélioration disponible.';
+    }
 }
+
+// Fonction pour créer un PDF avec les suggestions
+async function createPdf(combinedSuggestions) {
+    const pdfDoc = await PDFDocument.create();
+    const page = pdfDoc.addPage([600, 400]);
+    const { width, height } = page.getSize();
+
+    // Définir la police et la couleur
+    page.drawText('Suggestions d\'amélioration', {
+        x: 50,
+        y: height - 50,
+        size: 20,
+        color: rgb(0, 0, 0),
+    });
+
+    // Ajouter les suggestions
+    page.drawText(combinedSuggestions, {
+        x: 50,
+        y: height - 100,
+        size: 12,
+        color: rgb(0, 0, 0),
+        lineHeight: 14,
+    });
+
+    const pdfBytes = await pdfDoc.save();
+    return pdfBytes;
+}
+
+// Configuration du transporteur de courrier avec nodemailer
+const transporter = nodemailer.createTransport({
+    host: process.env.SMTP_HOST,
+    port: process.env.SMTP_PORT,
+    secure: process.env.SMTP_SECURE === 'true', // true pour SSL, false pour TLS
+    auth: {
+        user: process.env.SMTP_USERNAME,
+        pass: process.env.SMTP_PASSWORD,
+    },
+});
 
 // Fonction principale pour exécuter le script
 async function main() {
-    const { commitInfo, commitDetails } = getCommitDetails();
-    const diff = getDiff();
-
-    console.log('Informations du dernier commit:', commitInfo);
-    console.log('Détails du commit:', commitDetails);
-    console.log('Différences du dernier commit:', diff);
-
+    // Analyse du code pour vérifier les critères
     const localSuggestions = analyzeCodeForCriteria(diff);
     console.log('Suggestions d\'amélioration locales:', localSuggestions);
 
-    // Si le diff est vide ou n'a pas de code, on peut arrêter ici
-    if (!diff.trim()) {
-        console.log('Aucune modification de code à analyser.');
-        return;
-    }
-
+    // Analyse du code et obtention des suggestions via Gemini
     const geminiSuggestions = await analyzeCodeWithGemini(diff);
 
+    // Combiner les suggestions locales et celles de Gemini
     const combinedSuggestions = `
         <strong>Suggestions d'amélioration locales :</strong><br>
         <pre>${localSuggestions}</pre>
@@ -77,26 +126,13 @@ async function main() {
         <pre>${geminiSuggestions}</pre>
     `;
 
+    // Afficher les suggestions combinées pour le débogage
     console.log('Suggestions d\'amélioration combinées:', combinedSuggestions);
 
-    const emailMatch = commitInfo.match(/<(.*?)>/);
-    let userEmail = emailMatch ? emailMatch[1] : '';
+    // Créer le PDF
+    const pdfBytes = await createPdf(combinedSuggestions);
 
-    if (!userEmail.includes('@gmail.com')) {
-        const username = userEmail.substring(userEmail.indexOf('+') + 1, userEmail.indexOf('@'));
-        userEmail = `${username}@gmail.com`; // Créer l'adresse e-mail
-    }
-
-    const transporter = nodemailer.createTransport({
-        host: process.env.SMTP_HOST,
-        port: process.env.SMTP_PORT,
-        secure: process.env.SMTP_SECURE === 'true', // true pour SSL, false pour TLS
-        auth: {
-            user: process.env.SMTP_USERNAME,
-            pass: process.env.SMTP_PASSWORD,
-        },
-    });
-
+    // Options de l'email
     const mailOptions = {
         from: `"Notification Git" <${process.env.SMTP_USERNAME}>`,
         to: userEmail,
@@ -130,22 +166,29 @@ async function main() {
             </head>
             <body>
                 <div class="container">
-                    <h1>🎉 Nouveau Commit Effectué !</h1>
+                    <h1>Nouveau Commit Effectué !</h1>
                     <p>Voici les détails du dernier commit :</p>
                     <pre>${commitDetails}</pre>
-                    <p>${combinedSuggestions}</p>
-                    <p>Merci de votre attention.</p>
+                    <p>Merci de votre attention. Les suggestions détaillées sont incluses dans le document PDF ci-joint.</p>
                 </div>
             </body>
             </html>
         `,
+        attachments: [
+            {
+                filename: 'suggestions.pdf',
+                content: pdfBytes,
+                contentType: 'application/pdf',
+            },
+        ],
     };
 
+    // Envoyer l'email
     transporter.sendMail(mailOptions, (error, info) => {
         if (error) {
             console.error(`Erreur lors de l'envoi de l'email : ${error.message}`);
         } else {
-            console.log(`Notification de commit envoyée à ${userEmail} !`);
+            console.log(`Notification de commit envoyée à ${userEmail} avec le PDF joint !`);
         }
     });
 }
