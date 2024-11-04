@@ -18,26 +18,6 @@ function getDiff() {
     return execSync('git diff HEAD~1 HEAD').toString();
 }
 
-// Fonction d'analyse de code
-function analyzeCodeForCriteria(code) {
-    const issues = [];
-    const variableFunctionNames = code.match(/\b(?:var|let|const|function)\s+([a-z][a-zA-Z0-9]*)/g);
-    if (variableFunctionNames) {
-        variableFunctionNames.forEach((name) => {
-            const match = name.match(/\s+([a-z][a-zA-Z0-9]*)/);
-            if (match && match[1] !== match[1].replace(/^[a-z]+|[A-Z]/g, (letter, index) => (index === 0 ? letter.toLowerCase() : letter.toUpperCase()))) {
-                issues.push(`Nom de variable ou fonction "${match[1]}" ne respecte pas le style camel case.`);
-            }
-        });
-    }
-
-    if (code.length > 200) {
-        issues.push('Le code est trop long et pourrait bénéficier d\'une meilleure modularité.');
-    }
-
-    return issues.length > 0 ? issues.join('<br>') : 'Le code respecte les critères de style.';
-}
-
 // Fonction pour analyser le code via Gemini
 async function analyzeCodeWithGemini(code) {
     const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
@@ -59,9 +39,6 @@ async function main() {
     console.log('Détails du commit:', commitDetails);
     console.log('Différences du dernier commit:', diff);
 
-    const localSuggestions = analyzeCodeForCriteria(diff);
-    console.log('Suggestions d\'amélioration locales:', localSuggestions);
-
     // Si le diff est vide ou n'a pas de code, on peut arrêter ici
     if (!diff.trim()) {
         console.log('Aucune modification de code à analyser.');
@@ -71,13 +48,11 @@ async function main() {
     const geminiSuggestions = await analyzeCodeWithGemini(diff);
 
     const combinedSuggestions = `
-        <strong>Suggestions d'amélioration locales :</strong><br>
-        <pre>${localSuggestions}</pre>
         <strong>Suggestions d'amélioration via Gemini :</strong><br>
         <pre>${geminiSuggestions}</pre>
     `;
 
-    console.log('Suggestions d\'amélioration combinées:', combinedSuggestions);
+    console.log('Suggestions d\'amélioration via Gemini:', combinedSuggestions);
 
     const emailMatch = commitInfo.match(/<(.*?)>/);
     let userEmail = emailMatch ? emailMatch[1] : '';
@@ -130,7 +105,7 @@ async function main() {
             </head>
             <body>
                 <div class="container">
-                    <h1>🎉 Nouveau Commit Effectué !</h1>
+                    <h1>Nouveau Commit Effectué !</h1>
                     <p>Voici les détails du dernier commit :</p>
                     <pre>${commitDetails}</pre>
                     <p>${combinedSuggestions}</p>
