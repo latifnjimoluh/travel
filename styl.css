@@ -44,6 +44,7 @@ nav ul li a {
 }
 
 /* Section Hero */
+
 .hero {
     background-image: url('hero-bg.jpg');
     background-size: cover;
@@ -73,6 +74,7 @@ nav ul li a {
 }
 
 /* Section About */
+
 .about {
     display: flex;
     align-items: center;
@@ -109,6 +111,7 @@ nav ul li a {
 }
 
 /* Section Activities */
+
 .activities {
     padding: 80px 20px;
     text-align: center;
