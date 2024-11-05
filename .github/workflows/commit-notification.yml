@@ -18,9 +18,6 @@ jobs:
         with:
           node-version: '21.1.0'  # Adaptez à la version de Node.js utilisée
 
-      - name: Install dependencies
-        run: npm install
-
       - name: Get commit details
         id: commit_details
         run: |
