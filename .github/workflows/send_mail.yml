@@ -16,20 +16,6 @@ jobs:
       - name: Get commit author email
         id: get_email
         run: |
-<<<<<<< HEAD
-          # Obtenir les informations du dernier commit
-          commitInfo=$(git log -1 --pretty=format:'%ae')
-          # Extraire l'adresse e-mail de l'auteur
-          userEmail="$commitInfo"
-          # Vérifier si l'adresse e-mail est déjà dans le bon format
-          if [[ ! "$userEmail" == *"@gmail.com"* ]]; then
-            # Extraire le nom d'utilisateur
-            username="${userEmail#*+}"
-            username="${username%@*}"
-            userEmail="$username@gmail.com" # Former l'adresse e-mail
-          fi
-          echo "userEmail=$userEmail" >> $GITHUB_ENV # Exporter l'adresse e-mail en tant que variable d'environnement
-=======
           commitInfo=$(git log -1 --pretty=format:'%ae')
           userEmail="$commitInfo"
           if [[ ! "$userEmail" == *"@gmail.com"* ]]; then
@@ -49,7 +35,6 @@ jobs:
           code=$(git diff HEAD^ HEAD) # Récupérer le code modifié
           improved_code=$(node analyze.js "$code") # Appeler le script d'analyse
           echo "improved_code=$improved_code" >> $GITHUB_ENV # Exporter le code amélioré
->>>>>>> nexus
 
       - name: Send notification email
         uses: dawidd6/action-send-mail@v3
@@ -58,13 +43,7 @@ jobs:
           server_port: 587
           username: ${{ secrets.SMTP_USERNAME }}
           password: ${{ secrets.SMTP_PASSWORD }}
-<<<<<<< HEAD
-          subject: 'Push Successful'
-          body: 'Le push sur la branche ${{ github.ref }} a été effectué avec succès !'
-          to: ${{ env.userEmail }} # Utiliser l'adresse e-mail extraite
-=======
           subject: 'Push Successful with Code Analysis'
-          body: 'Le push sur la branche ${{ github.ref }} a été effectué avec succès !\n\nSuggestions d\'amélioration du code:\n${{ env.improved_code }}'
+          body: 'Le push sur la branche ${{ github.ref }} a été effectué avec succès !\n\nSuggestions d\"amélioration du code:\n${{ env.improved_code }}'
           to: ${{ env.userEmail }}
->>>>>>> nexus
           from: 'latifnjimoluh@gmail.com' # Remplace par ton adresse e-mail
