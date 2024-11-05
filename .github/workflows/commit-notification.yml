@@ -1,0 +1,63 @@
+name: Commit Notification and Suggestions
+
+on:
+  push:
+    branches:
+      - '*'  # Surveille toutes les branches
+
+jobs:
+  notify_commit:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '21.1.0'  # Adaptez à la version de Node.js utilisée
+
+      - name: Get commit details
+        id: commit_details
+        run: |
+          echo "commit_info=$(git log -1 --pretty=format:'%H - %an <%ae> - %s')" >> $GITHUB_ENV
+          echo "commit_details=$(git log -1 --pretty=format:'Commit par : %an\nEmail : %ae\nMessage : %s\nDate : %ad')" >> $GITHUB_ENV
+          echo "diff=$(git diff HEAD~1 HEAD)" >> $GITHUB_ENV
+          echo "modified_files=$(git diff --name-only HEAD~1 HEAD | tr '\n' ', ')" >> $GITHUB_ENV
+          
+          # Extract the email of the author of the latest commit
+          echo "author_email=$(git log -1 --pretty=format:'%ae')" >> $GITHUB_ENV
+
+      - name: Generate PDF and Suggestions
+        run: |
+          # Créer un fichier PDF simplifié (le code complet nécessite des étapes supplémentaires)
+          echo "$COMMIT_DETAILS" > commit_details.txt
+          echo "Suggestions d'amélioration:" > suggestions.txt
+          # Fusionner dans un fichier PDF (remplacer par l'outil PDF de votre choix si nécessaire)
+
+      - name: Send Email Notification
+        uses: dawidd6/action-send-mail@v3
+        with:
+          server_address: ${{ secrets.SMTP_HOST }}
+          server_port: ${{ secrets.SMTP_PORT }}
+          username: ${{ secrets.SMTP_USERNAME }}
+          password: ${{ secrets.SMTP_PASSWORD }}
+          secure: ${{ secrets.SMTP_SECURE }}
+          subject: "Nouveau commit effectué par ${{ env.COMMIT_AUTHOR }}"
+          body: |
+            <html>
+            <body>
+              <h1>Nouveau Commit Effectué !</h1>
+              <p>Voici les détails du dernier commit :</p>
+              <pre>${{ env.COMMIT_DETAILS }}</pre>
+              <p><strong>Fichiers modifiés :</strong></p>
+              <ul>
+                <li>${{ env.MODIFIED_FILES }}</li>
+              </ul>
+              <p>Merci de votre attention.</p>
+            </body>
+            </html>
+          to: "${{ env.author_email }}"  # Envoi au committeur
+          from: ${{ secrets.SMTP_USERNAME }}
+          attachments: commit_details.txt,suggestions.txt
