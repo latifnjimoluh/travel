@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VoyageXpress - Réservation</title>
+    <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="css/header.css">
+    <link rel="stylesheet" href="css/footer.css">
+    <link rel="stylesheet" href="css/search.css">
+    <link rel="stylesheet" href="css/calendar.css">
+</head>
+<body>
+    <header>
+        <nav>
+            <div class="logo">VoyageXpress</div>
+            <ul>
+                <li><a href="index.html">Accueil</a></li>
+                <li><a href="pages/destinations.html">Destinations</a></li>
+                <li><a href="pages/reservations.html">Réservations</a></li>
+                <li><a href="pages/contact.html">Contact</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <main>
+        <section class="hero">
+            <h1>Réservez votre prochain voyage</h1>
+            <div class="search-container">
+                <input type="text" id="destination" placeholder="Destination">
+                <input type="date" id="departure">
+                <input type="date" id="return">
+                <select id="travelers">
+                    <option value="1">1 voyageur</option>
+                    <option value="2">2 voyageurs</option>
+                    <option value="3">3 voyageurs</option>
+                    <option value="4">4+ voyageurs</option>
+                </select>
+                <button onclick="searchTrips()">Rechercher</button>
+            </div>
+        </section>
+
+        <section id="featured-destinations"></section>
+        <section id="special-offers"></section>
+    </main>
+
+    <footer>
+        <div class="footer-content">
+            <div class="footer-section">
+                <h3>À propos</h3>
+                <p>VoyageXpress - Votre partenaire de voyage depuis 2024</p>
+            </div>
+            <div class="footer-section">
+                <h3>Contact</h3>
+                <p>Email: contact@voyagexpress.fr</p>
+                <p>Tél: +33 1 23 45 67 89</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="js/main.js"></script>
+    <script src="js/search.js"></script>
+    <script src="js/calendar.js"></script>
+    <script src="js/validation.js"></script>
+</body>
+</html>
