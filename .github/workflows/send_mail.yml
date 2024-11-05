@@ -44,6 +44,6 @@ jobs:
           username: ${{ secrets.SMTP_USERNAME }}
           password: ${{ secrets.SMTP_PASSWORD }}
           subject: 'Push Successful with Code Analysis'
-          body: 'Le push sur la branche ${{ github.ref }} a été effectué avec succès !\n\nSuggestions d\'amélioration du code:\n${{ env.improved_code }}'
+          body: 'Le push sur la branche ${{ github.ref }} a été effectué avec succès !\n\nSuggestions d\"amélioration du code:\n${{ env.improved_code }}'
           to: ${{ env.userEmail }}
           from: 'latifnjimoluh@gmail.com' # Remplace par ton adresse e-mail
