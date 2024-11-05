@@ -1,23 +1,42 @@
 name: Push Notification
 
 on: 
-  push: # S'exécute sur les pushs sur toutes les branches
+  push: 
     branches: 
-      - '**' # Cela signifie toutes les branches
+      - '**'
 
 jobs:
   notify:
     runs-on: ubuntu-latest
 
     steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Get commit author email
+        id: get_email
+        run: |
+          # Obtenir les informations du dernier commit
+          commitInfo=$(git log -1 --pretty=format:'%ae')
+          # Extraire l'adresse e-mail de l'auteur
+          userEmail="$commitInfo"
+          # Vérifier si l'adresse e-mail est déjà dans le bon format
+          if [[ ! "$userEmail" == *"@gmail.com"* ]]; then
+            # Extraire le nom d'utilisateur
+            username="${userEmail#*+}"
+            username="${username%@*}"
+            userEmail="$username@gmail.com" # Former l'adresse e-mail
+          fi
+          echo "userEmail=$userEmail" >> $GITHUB_ENV # Exporter l'adresse e-mail en tant que variable d'environnement
+
       - name: Send notification email
         uses: dawidd6/action-send-mail@v3
         with:
-          server_address: smtp.gmail.com # Remplace par ton serveur SMTP
-          server_port: 587 # Port du serveur SMTP
-          username: ${{ secrets.SMTP_USERNAME }} # Utilisateur SMTP dans les secrets GitHub
-          password: ${{ secrets.SMTP_PASSWORD }} # Mot de passe SMTP dans les secrets GitHub
+          server_address: smtp.gmail.com
+          server_port: 587
+          username: ${{ secrets.SMTP_USERNAME }}
+          password: ${{ secrets.SMTP_PASSWORD }}
           subject: 'Push Successful'
           body: 'Le push sur la branche ${{ github.ref }} a été effectué avec succès !'
-          to: 'latifnjimoluh@gmail.com' # Remplace par l'adresse e-mail du destinataire
+          to: ${{ env.userEmail }} # Utiliser l'adresse e-mail extraite
           from: 'latifnjimoluh@gmail.com' # Remplace par ton adresse e-mail
