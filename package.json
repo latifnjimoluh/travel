@@ -1,0 +1,23 @@
+{
+  "name": "alexandra",
+  "version": "1.0.0",
+  "description": "1. Installation des modules Node.js\r • Commandes utilisées :\r npm init -y\r npm install @google/generative-ai@^0.21.0\r npm install axios@^1.7.7\r npm install dotenv@^16.4.5\r npm install nodemailer@^6.9.16\r npm install openai@^4.70.2\r npm install pdf-lib@^1.17.1\r npm install pdfkit@^0.15.1\r rename fichier package.json \r     \"start\": \"node analyzeCommit.js\"",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "travel"
+  },
+  "author": "alexandra",
+  "license": "ISC",
+  "dependencies": {
+    "@google/generative-ai": "^0.21.0",
+    "axios": "^1.7.7",
+    "dotenv": "^16.4.5",
+    "nodemailer": "^6.9.16",
+    "pdf-lib": "^1.17.1",
+    "pdfkit": "^0.15.1"
+  }
+}
