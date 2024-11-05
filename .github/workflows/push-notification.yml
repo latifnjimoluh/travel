@@ -1,0 +1,23 @@
+name: Push Notification
+
+on: 
+  push:
+    branches:
+      - main # ou la branche sur laquelle tu veux surveiller les pushs
+
+jobs:
+  notify:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Send notification email
+        uses: dawidd6/action-send-mail@v3
+        with:
+          server_address: smtp.example.com # Remplace par ton serveur SMTP
+          server_port: 587 # Port du serveur SMTP
+          username: ${{ secrets.SMTP_USERNAME }} # Utilisateur SMTP dans les secrets GitHub
+          password: ${{ secrets.SMTP_PASSWORD }} # Mot de passe SMTP dans les secrets GitHub
+          subject: 'Push Successful'
+          body: 'Le push sur la branche main a été effectué avec succès !'
+          to: 'poenex5@gmail.com' # Remplace par l'adresse e-mail du destinataire
+          from: 'latifnjimoluh@gmail.com' # Remplace par ton adresse e-mail
