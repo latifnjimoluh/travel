@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Réservation - VoyageXpress</title>
+    <link rel="stylesheet" href="../css/main.css">
+    <link rel="stylesheet" href="../css/booking.css">
+</head>
+<body>
+    <header><!-- même header que index.html --></header>
+
+    <main class="booking-page">
+        <h1>Réservation de voyage</h1>
+        
+        <div class="booking-container">
+            <div class="trip-summary">
+                <h2>Résumé du voyage</h2>
+                <div id="selected-trip"></div>
+            </div>
+
+            <form id="booking-form" class="booking-form">
+                <div class="form-section">
+                    <h3>Informations personnelles</h3>
+                    <div class="form-group">
+                        <label for="firstName">Prénom</label>
+                        <input type="text" id="firstName" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="lastName">Nom</label>
+                        <input type="text" id="lastName" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="email">Email</label>
+                        <input type="email" id="email" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="phone">Téléphone</label>
+                        <input type="tel" id="phone" required>
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <h3>Détails du voyage</h3>
+                    <div class="form-group">
+                        <label for="travelers">Nombre de voyageurs</label>
+                        <select id="travelers" required>
+                            <option value="1">1</option>
+                            <option value="2">2</option>
+                            <option value="3">3</option>
+                            <option value="4">4</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="class">Classe</label>
+                        <select id="class" required>
+                            <option value="economy">Économique</option>
+                            <option value="business">Affaires</option>
+                            <option value="first">Première</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <h3>Paiement</h3>
+                    <div class="form-group">
+                        <label for="cardNumber">Numéro de carte</label>
+                        <input type="text" id="cardNumber" required>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="expiry">Date d'expiration</label>
+                            <input type="text" id="expiry" placeholder="MM/AA" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="cvv">CVV</label>
+                            <input type="text" id="cvv" required>
+                        </div>
+                    </div>
+                </div>
+
+                <button type="submit" class="submit-booking">Confirmer la réservation</button>
+            </form>
+        </div>
+    </main>
+
+    <footer><!-- même footer que index.html --></footer>
+
+    <script src="../js/booking.js"></script>
+    <script src="../js/validation.js"></script>
+    <script src="../js/payment.js"></script>
+</body>
+</html>
