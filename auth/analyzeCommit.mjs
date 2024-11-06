@@ -17,12 +17,26 @@ function getCommitDetails() {
 
 // Fonction pour récupérer les modifications du dernier commit
 function getDiff() {
-    return execSync('git diff HEAD~1 HEAD').toString();
+    let diff;
+    try {
+        diff = execSync('git diff HEAD~1 HEAD').toString();
+    } catch (error) {
+        console.log("Impossible de récupérer les différences entre HEAD~1 et HEAD. Peut-être qu'il n'y a qu'un seul commit.");
+        diff = null;
+    }
+    return diff;
 }
 
 // Fonction pour récupérer les fichiers modifiés du dernier commit
 function getModifiedFiles() {
-    return execSync('git diff --name-only HEAD~1 HEAD').toString().trim().split('\n');
+    let files;
+    try {
+        files = execSync('git diff --name-only HEAD~1 HEAD').toString().trim().split('\n');
+    } catch (error) {
+        console.log("Impossible de récupérer les fichiers modifiés. Peut-être qu'il n'y a qu'un seul commit.");
+        files = [];
+    }
+    return files;
 }
 
 // Fonction pour analyser le code via Gemini
@@ -62,7 +76,7 @@ async function main() {
     console.log('Différences du dernier commit:', diff);
     console.log('Fichiers modifiés :', modifiedFiles.join(', '));
 
-    if (!diff.trim()) {
+    if (!diff || !diff.trim()) {
         console.log('Aucune modification de code à analyser.');
         return;
     }
@@ -95,48 +109,7 @@ async function main() {
         from: `"Notification Git" <${process.env.SMTP_USERNAME}>`,
         to: userEmail,
         subject: "Nouveau commit effectué",
-        html: `
-            <html>
-            <head>
-                <title>Notification de Commit</title>
-                <style>
-                    body {
-                        font-family: Arial, sans-serif;
-                        background-color: #f4f4f4;
-                        margin: 0;
-                        padding: 20px;
-                    }
-                    .container {
-                        background-color: #ffffff;
-                        border-radius: 5px;
-                        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-                        padding: 20px;
-                    }
-                    h1 {
-                        color: #333;
-                    }
-                    pre {
-                        background-color: #eee;
-                        border-left: 3px solid #007bff;
-                        padding: 10px;
-                    }
-                </style>
-            </head>
-            <body>
-                <div class="container">
-                    <h1>Nouveau Commit Effectué !</h1>
-                    <p>Voici les détails du dernier commit :</p>
-                    <pre>${commitDetails}</pre>
-                    <p><strong>Fichiers modifiés :</strong></p>
-                    <ul>
-                        ${modifiedFiles.map(file => `<li>${file}</li>`).join('')}
-                    </ul>
-                    <p>Veuillez trouver en pièce jointe les suggestions d'amélioration.</p>
-                    <p>Merci de votre attention.</p>
-                </div>
-            </body>
-            </html>
-        `,
+        html: `...`,  // Le contenu HTML du message
         attachments: [
             {
                 filename: 'suggestions_gemini.pdf',
