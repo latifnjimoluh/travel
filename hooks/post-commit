@@ -1,2 +1,94 @@
+<<<<<<< HEAD
 #!/bin/sh
 node ./analyzeCommit.mjs
+=======
+#!/usr/bin/php
+<?php
+// Inclure les bibliothèques nécessaires
+require realpath(__DIR__ . '/../../vendor/autoload.php'); // Chemin absolu vers autoload.php
+
+use PHPMailer\PHPMailer\PHPMailer;
+use PHPMailer\PHPMailer\Exception;
+use Dotenv\Dotenv;
+
+// Charger les variables d'environnement
+$dotenv = Dotenv::createImmutable(realpath(__DIR__ . '/../../')); // Chemin vers la racine du projet
+$dotenv->load();
+
+// Récupérer les informations du dernier commit
+$commitInfo = shell_exec('git log -1 --pretty=format:"%H - %an <%ae> - %s"');
+$commitDetails = shell_exec('git log -1 --pretty=format:"Commit par : %an<br>Email : %ae<br>Message : %s<br>Date : %ad"');
+
+// Extraire l'adresse e-mail de l'auteur du commit
+preg_match('/<(.*?)>/', $commitInfo, $matches);
+$userEmail = $matches[1]; // Récupérer l'adresse e-mail
+
+// Vérifier si l'adresse e-mail est déjà dans le bon format
+if (strpos($userEmail, '@gmail.com') === false) {
+    // Si l'adresse ne contient pas @gmail.com, extraire le nom d'utilisateur
+    $username = substr($userEmail, strpos($userEmail, '+') + 1, strpos($userEmail, '@') - strpos($userEmail, '+') - 1);
+    $userEmail = $username . '@gmail.com'; // Former l'adresse e-mail
+}
+
+// Configuration de l'email
+$mail = new PHPMailer(true);
+try {
+    $mail->isSMTP();
+    $mail->Host = $_ENV['SMTP_HOST'];
+    $mail->SMTPAuth = true;
+    $mail->Username = $_ENV['SMTP_USERNAME'];
+    $mail->Password = $_ENV['SMTP_PASSWORD'];
+    $mail->SMTPSecure = $_ENV['SMTP_SECURE'];
+    $mail->Port = $_ENV['SMTP_PORT'];
+
+    // Destinataires
+    $mail->setFrom($_ENV['SMTP_USERNAME'], 'Notification Git');
+    $mail->addAddress($userEmail); // Utiliser l'email de l'utilisateur qui a commit
+
+    // Contenu de l'email
+    $mail->isHTML(true);
+    $mail->Subject = "Nouveau commit effectué";
+    $mail->Body = "
+        <html>
+        <head>
+            <title>Notification de Commit</title>
+            <style>
+                body {
+                    font-family: Arial, sans-serif;
+                    background-color: #f4f4f4;
+                    margin: 0;
+                    padding: 20px;
+                }
+                .container {
+                    background-color: #ffffff;
+                    border-radius: 5px;
+                    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+                    padding: 20px;
+                }
+                h1 {
+                    color: #333;
+                }
+                pre {
+                    background-color: #eee;
+                    border-left: 3px solid #007bff;
+                    padding: 10px;
+                }
+            </style>
+        </head>
+        <body>
+            <div class='container'>
+                <h1>🎉 Nouveau Commit Effectué !</h1>
+                <p>Voici les détails du dernier commit :</p>
+                <pre>{$commitDetails}</pre>
+                <p>Merci de votre attention.</p>
+            </div>
+        </body>
+        </html>
+    ";
+
+    $mail->send();
+    echo "Notification de commit envoyée à {$userEmail} !\n";
+} catch (Exception $e) {
+    echo "Erreur lors de l'envoi de l'email : {$mail->ErrorInfo}\n";
+}
+>>>>>>> 0feb101 (test (#8) (#9))
