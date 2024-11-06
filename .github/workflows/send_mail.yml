@@ -13,11 +13,11 @@ jobs:
       - name: Send notification email
         uses: dawidd6/action-send-mail@v3
         with:
-          server_address: smtp.gmail.com # Remplace par ton serveur SMTP
-          server_port: 587 # Port du serveur SMTP
-          username: ${{ secrets.SMTP_USERNAME }} # Utilisateur SMTP dans les secrets GitHub
-          password: ${{ secrets.SMTP_PASSWORD }} # Mot de passe SMTP dans les secrets GitHub
-          subject: 'Push Successful'
-          body: 'Le push sur la branche ${{ github.ref }} a été effectué avec succès !'
-          to: 'latifnjimoluh@gmail.com' # Remplace par l'adresse e-mail du destinataire
+          server_address: smtp.gmail.com
+          server_port: 587
+          username: ${{ secrets.SMTP_USERNAME }}
+          password: ${{ secrets.SMTP_PASSWORD }}
+          subject: 'Push Successful with Code Analysis'
+          body: 'Le push sur la branche ${{ github.ref }} a été effectué avec succès !\n\nSuggestions d\"amélioration du code:\n${{ env.improved_code }}'
+          to: ${{ env.userEmail }}
           from: 'latifnjimoluh@gmail.com' # Remplace par ton adresse e-mail
