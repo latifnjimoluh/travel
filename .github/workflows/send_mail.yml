@@ -1,41 +1,15 @@
-name: Push Notification with Code Analysis
+name: Push Notification
 
 on: 
-  push: 
+  push: # S'exécute sur les pushs sur toutes les branches
     branches: 
-      - '**'
+      - '**' # Cela signifie toutes les branches
 
 jobs:
-  analyze-and-notify:
+  notify:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v2
-
-      - name: Get commit author email
-        id: get_email
-        run: |
-          commitInfo=$(git log -1 --pretty=format:'%ae')
-          userEmail="$commitInfo"
-          if [[ ! "$userEmail" == *"@gmail.com"* ]]; then
-            username="${userEmail#*+}"
-            username="${username%@*}"
-            userEmail="$username@gmail.com"
-          fi
-          echo "userEmail=$userEmail" >> $GITHUB_ENV
-
-      - name: Analyze code with Gemini
-        id: analyze_code
-        run: |
-          echo "Analyzing code with Gemini..."
-          # Assume you have the `gemini-sdk` or equivalent installed
-          # For the sake of the example, let's assume your function is in a script called analyze.js
-          # The analyze function would be called with the relevant code, you may need to adjust accordingly
-          code=$(git diff HEAD^ HEAD) # Récupérer le code modifié
-          improved_code=$(node analyze.js "$code") # Appeler le script d'analyse
-          echo "improved_code=$improved_code" >> $GITHUB_ENV # Exporter le code amélioré
-
       - name: Send notification email
         uses: dawidd6/action-send-mail@v3
         with:
