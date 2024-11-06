@@ -25,4 +25,4 @@ jobs:
         run: npm install  # Installe toutes les dépendances listées dans package.json
 
       - name: Run analyzeCommit.mjs
-        run: node ./auth/analyzeCommit.mjs  # Exécuter le fichier JavaScript
+        run: node ./analyzeCommit.mjs  # Exécuter le fichier JavaScript
