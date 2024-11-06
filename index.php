@@ -58,14 +58,7 @@
     hello 42
     hello 43
     hello 44
-    hello 45
-    hello 48
-    hello 49
-    hello 50
-    hello 51
-    
-    <html>
-        <tile>bodu</tile>
+    hello 45        <tile>bodu</tile>
     </html>
     yo echo hello
     slf;dkl
