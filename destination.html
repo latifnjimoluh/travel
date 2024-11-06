@@ -1,57 +1,66 @@
 <!DOCTYPE html>
 <html lang="fr">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Agence de voyage spécialisée dans les destinations de rêve. Découvrez des forfaits uniques pour vos prochaines vacances.">
+    <meta name="keywords" content="voyage, destinations, vacances, agence de voyage, aventures, tourisme, réservation">
+    <meta name="author" content="Agence de Voyage">
     <title>Destination Voyage - Agence de Voyage</title>
     <link rel="stylesheet" href="style.css">
+    <link rel="icon" href="favicon.ico" type="image/x-icon">
+    <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@300;400;600&display=swap" rel="stylesheet">
 </head>
+
 <body>
     <header>
         <nav>
-            <div class="logo">Agence de Voyage</div>
+            <div class="logo">
+                <a href="#" title="Page d'accueil">Agence de Voyage</a>
+            </div>
             <ul>
-                <li><a href="#">Accueil</a></li>
-                <li><a href="#">Destinations</a></li>
-                <li><a href="#">Forfaits</a></li>
-                <li><a href="#">Contact</a></li>
+                <li><a href="#" title="Accueil">Accueil</a></li>
+                <li><a href="#" title="Destinations">Destinations</a></li>
+                <li><a href="#" title="Forfaits">Forfaits</a></li>
+                <li><a href="#" title="Contact">Contact</a></li>
             </ul>
         </nav>
     </header>
 
     <main>
-        <section class="hero">
+        <section class="hero" role="banner">
             <h1>Découvrez notre destination de rêve</h1>
             <p>Partez à l'aventure dans un endroit paradisiaque.</p>
-            <button>Réservez maintenant</button>
+            <a href="#" class="button" title="Réservez maintenant">Réservez maintenant</a>
         </section>
 
-        <section class="about">
+        <section class="about" role="region">
             <div class="about-left">
-                <img src="destination.jpg" alt="Destination de voyage">
+                <img src="destination.jpg" alt="Vue magnifique d'une destination de voyage" loading="lazy">
             </div>
             <div class="about-right">
                 <h2>À propos de cette destination</h2>
                 <p>Découvrez un endroit enchanteur où la nature est omniprésente. Profitez de paysages à couper le souffle et d'activités incroyables.</p>
-                <a href="#" class="cta">En savoir plus</a>
+                <a href="#" class="cta" title="En savoir plus sur cette destination">En savoir plus</a>
             </div>
         </section>
 
-        <section class="activities">
+        <section class="activities" role="region">
             <h2>Activités à découvrir</h2>
             <div class="activity-grid">
                 <div class="activity-card">
-                    <img src="plage.jpg" alt="Plage">
+                    <img src="plage.jpg" alt="Plage paradisiaque" loading="lazy">
                     <h3>Plage paradisiaque</h3>
                     <p>Profitez de plages de sable fin et d'eaux turquoise.</p>
                 </div>
                 <div class="activity-card">
-                    <img src="randonnee.jpg" alt="Randonnée">
+                    <img src="randonnee.jpg" alt="Randonnée époustouflante" loading="lazy">
                     <h3>Randonnées époustouflantes</h3>
                     <p>Partez à la découverte de sentiers de randonnée à couper le souffle.</p>
                 </div>
                 <div class="activity-card">
-                    <img src="snorkeling.jpg" alt="Snorkeling">
+                    <img src="snorkeling.jpg" alt="Snorkeling dans des eaux cristallines" loading="lazy">
                     <h3>Snorkeling dans des eaux cristallines</h3>
                     <p>Explorez les fonds marins et leur faune colorée.</p>
                 </div>
@@ -59,10 +68,11 @@
         </section>
     </main>
 
-    <footer>
+    <footer role="contentinfo">
         <p>&copy; 2023 Agence de Voyage. Tous droits réservés.</p>
     </footer>
 
     <script src="script.js"></script>
 </body>
+
 </html>
