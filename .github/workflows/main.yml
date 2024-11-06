@@ -18,6 +18,9 @@ jobs:
         with:
           node-version: '21.1.0'  # Spécifiez la version de Node.js souhaitée
 
+      - name: Fetch all commits
+        run: git fetch --depth=2  # Récupérer plus de commits pour garantir l'accès à HEAD~1
+
       - name: Install dependencies
         run: npm install  # Installe toutes les dépendances listées dans package.json
 
