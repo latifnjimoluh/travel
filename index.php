@@ -58,7 +58,6 @@
     hello 42
     hello 43
     hello 44
-<<<<<<< HEAD
     hello 45
     hello 48
     hello 49
@@ -67,9 +66,6 @@
     
     <html>
         <tile>bodu</tile>
-=======
-    hello 45        <tile>bodu</tile>
->>>>>>> a93e71658877c2daa7fa89184a5cbe750eb0d145
     </html>
     yo echo hello
     slf;dkl
