@@ -25,10 +25,16 @@ function getModifiedFiles() {
     return execSync('git diff --name-only HEAD~1 HEAD').toString().trim().split('\n');
 }
 
+// Fonction pour déterminer l'extension de fichier en fonction du langage
+function getFileExtension(filename) {
+    const extension = filename.split('.').pop();
+    return extension ? `.${extension}` : '.txt'; // Par défaut, .txt si l'extension n'est pas reconnue
+}
+
 // Fonction pour analyser le code via Gemini
 async function analyzeCodeWithGemini(code) {
     const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
-    const prompt = `Veuillez examiner le code suivant puis fournir le nom des fichiers modifiés, la modification effectuée et suggérer des améliorations. Répond uniquement en français:\n\n${code}`;
+    const prompt = `Founis moi uniquement le code amelioré les commentaires sont uniquement en français:\n\n${code}`;
 
     const result = await model.generateContent(prompt);
     const response = await result.response;
@@ -49,6 +55,11 @@ function createPDF(commitDetails, suggestions, outputPath) {
     doc.moveDown().fontSize(12).text(suggestions);
 
     doc.end();
+}
+
+// Fonction pour créer un fichier code avec les suggestions
+function createCodeFile(suggestions, extension, outputPath) {
+    fs.writeFileSync(outputPath, suggestions, 'utf8');
 }
 
 // Fonction principale pour exécuter le script
@@ -72,6 +83,11 @@ async function main() {
     // Créer le fichier PDF
     const pdfPath = 'suggestions_gemini.pdf';
     createPDF(commitDetails, geminiSuggestions, pdfPath);
+
+    // Créer le fichier de code avec l'extension appropriée
+    const extension = getFileExtension(modifiedFiles[0]);
+    const codeFilePath = `suggestions${extension}`;
+    createCodeFile(geminiSuggestions, extension, codeFilePath);
 
     const emailMatch = commitInfo.match(/<(.*?)>/);
     let userEmail = emailMatch ? emailMatch[1] : '';
@@ -100,26 +116,10 @@ async function main() {
             <head>
                 <title>Notification de Commit</title>
                 <style>
-                    body {
-                        font-family: Arial, sans-serif;
-                        background-color: #f4f4f4;
-                        margin: 0;
-                        padding: 20px;
-                    }
-                    .container {
-                        background-color: #ffffff;
-                        border-radius: 5px;
-                        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-                        padding: 20px;
-                    }
-                    h1 {
-                        color: #333;
-                    }
-                    pre {
-                        background-color: #eee;
-                        border-left: 3px solid #007bff;
-                        padding: 10px;
-                    }
+                    body { font-family: Arial, sans-serif; background-color: #f4f4f4; margin: 0; padding: 20px; }
+                    .container { background-color: #ffffff; border-radius: 5px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); padding: 20px; }
+                    h1 { color: #333; }
+                    pre { background-color: #eee; border-left: 3px solid #007bff; padding: 10px; }
                 </style>
             </head>
             <body>
@@ -128,9 +128,7 @@ async function main() {
                     <p>Voici les détails du dernier commit :</p>
                     <pre>${commitDetails}</pre>
                     <p><strong>Fichiers modifiés :</strong></p>
-                    <ul>
-                        ${modifiedFiles.map(file => `<li>${file}</li>`).join('')}
-                    </ul>
+                    <ul>${modifiedFiles.map(file => `<li>${file}</li>`).join('')}</ul>
                     <p>Veuillez trouver en pièce jointe les suggestions d'amélioration.</p>
                     <p>Merci de votre attention.</p>
                 </div>
@@ -138,10 +136,8 @@ async function main() {
             </html>
         `,
         attachments: [
-            {
-                filename: 'suggestions_gemini.pdf',
-                path: pdfPath,
-            },
+            { filename: 'suggestions_gemini.pdf', path: pdfPath },
+            { filename: `suggestions${extension}`, path: codeFilePath }
         ],
     };
 
@@ -151,6 +147,7 @@ async function main() {
         } else {
             console.log(`Notification de commit envoyée à ${userEmail} !`);
             fs.unlinkSync(pdfPath); // Supprimer le PDF après l'envoi
+            fs.unlinkSync(codeFilePath); // Supprimer le fichier code après l'envoi
         }
     });
 }

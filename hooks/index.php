@@ -58,10 +58,13 @@
     hello 42
     hello 43
     hello 44
+<<<<<<<< HEAD:hooks/index.php
+========
+    donner un body a ce code 
+>>>>>>>> 2621afb42c6e26f334be28e40e0429d17317ef4f:index.php
     <html>
-        <tile>bodu</tile>
+        <tile>mince</tile>
     </html>
-    yo echo hello
-    slf;dkl
+    try
 </body>
 </html1>
