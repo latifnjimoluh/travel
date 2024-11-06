@@ -1,9 +1,9 @@
-import { execSync } from 'child_process';
-import nodemailer from 'nodemailer';
-import 'dotenv/config';
-import { GoogleGenerativeAI } from "@google/generative-ai";
-import PDFDocument from 'pdfkit';
-import fs from 'fs';
+import { execSync } from '../child_process';
+import nodemailer from '../nodemailer';
+import '../dotenv/config';
+import { GoogleGenerativeAI } from "../@google/generative-ai";
+import PDFDocument from '../pdfkit';
+import fs from '../fs';
 
 // Créer une instance de Gemini
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
