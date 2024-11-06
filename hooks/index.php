@@ -58,10 +58,10 @@
     hello 42
     hello 43
     hello 44
-    donner un body a ce code 
     <html>
-        <tile>mince</tile>
+        <tile>bodu</tile>
     </html>
-    try
+    yo echo hello
+    slf;dkl
 </body>
 </html1>
