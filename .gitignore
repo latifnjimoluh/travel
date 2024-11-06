@@ -1,0 +1,7 @@
+.env
+composer.json
+composer.lock
+vendor
+settings.txt
+PATH.txt
+Composer-Setup.exe
